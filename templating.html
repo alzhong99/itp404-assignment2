@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Week 3 HW: Client-Side Templating</title>
+</head>
+<body>
+  <h1>Subreddit Posts</h1>
+  <input type='text' id='subreddit'></input>
+  <button type='button'>Search</button>
+  <div id='posts'></div>
+  <template id='posts-template'>
+    {{#each posts}}
+    <div class='post'>
+      <a href='{{data.url}}'>{{data.title}}</a>
+      <p>Score: {{data.score}}</p>
+      {{#if data.num_comments}}
+        <p>Comments: {{data.num_comments}}</p>
+      {{else}}
+        <p>No comments</p>
+      {{/if}}
+    </div>
+    {{/each}}
+  </template>
+
+  <script src='jquery-3.2.1.js'></script>
+  <script src='handlebars-v4.0.10.js'></script>
+  <script>
+    var template = $('#posts-template').html();
+    var renderPosts = Handlebars.compile(template);
+    var postArray;
+
+    function fetchPostsForSubreddit(subreddit) {
+      return $.getJSON('https://www.reddit.com/r/' + subreddit + '.json');
+    }
+
+    $('button').on('click',function() {
+      $('#posts').html('Loading...');
+      fetchPostsForSubreddit($('#subreddit').val()).then(function(results) {
+          postArray = results.data.children;
+          var html = renderPosts({posts: postArray});
+          $('#posts').html(html);
+          console.log(html);
+        }, function() {
+          console.log('error');
+          $('#posts').html('<p>Oops! Something went wrong!</p>');
+        });
+    });
+
+  </script>
+</body>
+</html>
